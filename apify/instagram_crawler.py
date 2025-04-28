@@ -9,6 +9,7 @@ APIFY_TOKEN = os.getenv('APIFY_TOKEN')
 if not APIFY_TOKEN:
     raise ValueError("APIFY_TOKEN environment variable not set.")
 
+
 async def instagram_crawl(username: str, limit: int):
     print(f"Scraping Instagram posts for {username}...")
 
@@ -48,10 +49,19 @@ async def instagram_crawl(username: str, limit: int):
         for item in limited_items:
             print(f"Processing post with URL: {item.get('url', 'Unknown URL')}")
 
+            comments_raw = item.get('latestComments', [])
+
+            if not comments_raw:
+                continue
+
+            comments_decoded = [
+                bytes(comment['text'], 'utf-8').decode('utf-8') for comment in comments_raw
+            ]
+
             post_details = {
                 "post_url": item.get('url', None),
                 "description": item.get('caption', None),
-                "comments": [comment['text'] for comment in item.get('latestComments', [])],
+                "comments": comments_decoded,
                 "likes": item.get('likesCount', None),
             }
 
